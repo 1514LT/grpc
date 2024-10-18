@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package lt;
+
+// 定义请求消息
+message LTRequest {
+    string id = 1;      // 请求的ID
+    string data = 2;    // 请求的数据
+}
+
+// 定义响应消息
+message LTResponse {
+    string id = 1;      // 响应的ID
+    string message = 2; // 响应的消息
+}
+
+// 定义服务
+service LTService {
+    // 定义一个方法
+    rpc ProcessRequest(LTRequest) returns (LTResponse);
+}
+
