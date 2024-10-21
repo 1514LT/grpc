@@ -14,9 +14,20 @@ message LTResponse {
     string message = 2; // 响应的消息
 }
 
+
+message FileRequest {
+  string fileName = 1;
+}
+
+message FileResponse {
+    string fileName = 1;
+    bytes binaryData = 2;
+    int32 dataLen = 3;
+}
+
 // 定义服务
 service LTService {
     // 定义一个方法
     rpc ProcessRequest(LTRequest) returns (LTResponse);
+    rpc ProcessFileRequest(FileRequest) returns (FileResponse);
 }
-

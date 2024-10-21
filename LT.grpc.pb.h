@@ -44,12 +44,21 @@ class LTService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::LTResponse>> PrepareAsyncProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::LTResponse>>(PrepareAsyncProcessRequestRaw(context, request, cq));
     }
+    virtual ::grpc::Status ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::lt::FileResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>> AsyncProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>>(AsyncProcessFileRequestRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>> PrepareAsyncProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>>(PrepareAsyncProcessFileRequestRaw(context, request, cq));
+    }
     class async_interface {
      public:
       virtual ~async_interface() {}
       // 定义一个方法
       virtual void ProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void ProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
     };
     typedef class async_interface experimental_async_interface;
     virtual class async_interface* async() { return nullptr; }
@@ -57,6 +66,8 @@ class LTService final {
    private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::lt::LTResponse>* AsyncProcessRequestRaw(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::lt::LTResponse>* PrepareAsyncProcessRequestRaw(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>* AsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::lt::FileResponse>* PrepareAsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -68,11 +79,20 @@ class LTService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::LTResponse>> PrepareAsyncProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::LTResponse>>(PrepareAsyncProcessRequestRaw(context, request, cq));
     }
+    ::grpc::Status ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::lt::FileResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>> AsyncProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>>(AsyncProcessFileRequestRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>> PrepareAsyncProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>>(PrepareAsyncProcessFileRequestRaw(context, request, cq));
+    }
     class async final :
       public StubInterface::async_interface {
      public:
       void ProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response, std::function<void(::grpc::Status)>) override;
       void ProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, std::function<void(::grpc::Status)>) override;
+      void ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit async(Stub* stub): stub_(stub) { }
@@ -86,7 +106,10 @@ class LTService final {
     class async async_stub_{this};
     ::grpc::ClientAsyncResponseReader< ::lt::LTResponse>* AsyncProcessRequestRaw(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::lt::LTResponse>* PrepareAsyncProcessRequestRaw(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>* AsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::lt::FileResponse>* PrepareAsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_ProcessRequest_;
+    const ::grpc::internal::RpcMethod rpcmethod_ProcessFileRequest_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -96,6 +119,7 @@ class LTService final {
     virtual ~Service();
     // 定义一个方法
     virtual ::grpc::Status ProcessRequest(::grpc::ServerContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response);
+    virtual ::grpc::Status ProcessFileRequest(::grpc::ServerContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_ProcessRequest : public BaseClass {
@@ -117,7 +141,27 @@ class LTService final {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_ProcessRequest<Service > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestProcessFileRequest(::grpc::ServerContext* context, ::lt::FileRequest* request, ::grpc::ServerAsyncResponseWriter< ::lt::FileResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_ProcessRequest<WithAsyncMethod_ProcessFileRequest<Service > > AsyncService;
   template <class BaseClass>
   class WithCallbackMethod_ProcessRequest : public BaseClass {
    private:
@@ -145,7 +189,34 @@ class LTService final {
     virtual ::grpc::ServerUnaryReactor* ProcessRequest(
       ::grpc::CallbackServerContext* /*context*/, const ::lt::LTRequest* /*request*/, ::lt::LTResponse* /*response*/)  { return nullptr; }
   };
-  typedef WithCallbackMethod_ProcessRequest<Service > CallbackService;
+  template <class BaseClass>
+  class WithCallbackMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::lt::FileRequest, ::lt::FileResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response) { return this->ProcessFileRequest(context, request, response); }));}
+    void SetMessageAllocatorFor_ProcessFileRequest(
+        ::grpc::MessageAllocator< ::lt::FileRequest, ::lt::FileResponse>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::lt::FileRequest, ::lt::FileResponse>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ProcessFileRequest(
+      ::grpc::CallbackServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/)  { return nullptr; }
+  };
+  typedef WithCallbackMethod_ProcessRequest<WithCallbackMethod_ProcessFileRequest<Service > > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_ProcessRequest : public BaseClass {
@@ -160,6 +231,23 @@ class LTService final {
     }
     // disable synchronous version of this method
     ::grpc::Status ProcessRequest(::grpc::ServerContext* /*context*/, const ::lt::LTRequest* /*request*/, ::lt::LTResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -185,6 +273,26 @@ class LTService final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodRaw(1);
+    }
+    ~WithRawMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestProcessFileRequest(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawCallbackMethod_ProcessRequest : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -204,6 +312,28 @@ class LTService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual ::grpc::ServerUnaryReactor* ProcessRequest(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodRawCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ProcessFileRequest(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ProcessFileRequest(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
@@ -233,9 +363,36 @@ class LTService final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedProcessRequest(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::lt::LTRequest,::lt::LTResponse>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_ProcessRequest<Service > StreamedUnaryService;
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_ProcessFileRequest : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_ProcessFileRequest() {
+      ::grpc::Service::MarkMethodStreamed(1,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::lt::FileRequest, ::lt::FileResponse>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::lt::FileRequest, ::lt::FileResponse>* streamer) {
+                       return this->StreamedProcessFileRequest(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_ProcessFileRequest() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status ProcessFileRequest(::grpc::ServerContext* /*context*/, const ::lt::FileRequest* /*request*/, ::lt::FileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedProcessFileRequest(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::lt::FileRequest,::lt::FileResponse>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_ProcessRequest<WithStreamedUnaryMethod_ProcessFileRequest<Service > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_ProcessRequest<Service > StreamedService;
+  typedef WithStreamedUnaryMethod_ProcessRequest<WithStreamedUnaryMethod_ProcessFileRequest<Service > > StreamedService;
 };
 
 }  // namespace lt

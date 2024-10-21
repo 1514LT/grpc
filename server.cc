@@ -13,6 +13,8 @@
 #include "LT.grpc.pb.h"
 #include "LT.pb.h"
 
+#include <fstream>
+
 using namespace grpc;
 using namespace lt;
 using namespace std;
@@ -32,6 +34,22 @@ public:
         std::cout << "Processed request with ID: " << id << " and data: " << data << std::endl;
         return Status::OK; // 返回成功状态
     }
+    
+    Status ProcessFileRequest(ServerContext* context, const lt::FileRequest* request,lt::FileResponse* response) override {
+      std::string fielName = request->filename();
+      std::ifstream file(fielName,std::ios::binary);
+       if (!file) {
+        std::cerr << "Could not open file: " << fielName << std::endl;
+        return Status::CANCELLED;
+    }
+
+    std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    response->set_binarydata(data.data(),data.size());
+    response->set_datalen(data.size());
+    response->set_filename(fielName);
+    return Status::OK;
+  }
 };
 
 // 启动服务器

@@ -1,4 +1,6 @@
 build
 build/*
+build_code
+build_code/*
 .vscode
 .vscode/*

@@ -23,6 +23,7 @@ namespace lt {
 
 static const char* LTService_method_names[] = {
   "/lt.LTService/ProcessRequest",
+  "/lt.LTService/ProcessFileRequest",
 };
 
 std::unique_ptr< LTService::Stub> LTService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -33,6 +34,7 @@ std::unique_ptr< LTService::Stub> LTService::NewStub(const std::shared_ptr< ::gr
 
 LTService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
   : channel_(channel), rpcmethod_ProcessRequest_(LTService_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ProcessFileRequest_(LTService_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status LTService::Stub::ProcessRequest(::grpc::ClientContext* context, const ::lt::LTRequest& request, ::lt::LTResponse* response) {
@@ -58,6 +60,29 @@ void LTService::Stub::async::ProcessRequest(::grpc::ClientContext* context, cons
   return result;
 }
 
+::grpc::Status LTService::Stub::ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::lt::FileResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::lt::FileRequest, ::lt::FileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_ProcessFileRequest_, context, request, response);
+}
+
+void LTService::Stub::async::ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::lt::FileRequest, ::lt::FileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ProcessFileRequest_, context, request, response, std::move(f));
+}
+
+void LTService::Stub::async::ProcessFileRequest(::grpc::ClientContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ProcessFileRequest_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::lt::FileResponse>* LTService::Stub::PrepareAsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::lt::FileResponse, ::lt::FileRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_ProcessFileRequest_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::lt::FileResponse>* LTService::Stub::AsyncProcessFileRequestRaw(::grpc::ClientContext* context, const ::lt::FileRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncProcessFileRequestRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
 LTService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       LTService_method_names[0],
@@ -69,12 +94,29 @@ LTService::Service::Service() {
              ::lt::LTResponse* resp) {
                return service->ProcessRequest(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      LTService_method_names[1],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< LTService::Service, ::lt::FileRequest, ::lt::FileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](LTService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::lt::FileRequest* req,
+             ::lt::FileResponse* resp) {
+               return service->ProcessFileRequest(ctx, req, resp);
+             }, this)));
 }
 
 LTService::Service::~Service() {
 }
 
 ::grpc::Status LTService::Service::ProcessRequest(::grpc::ServerContext* context, const ::lt::LTRequest* request, ::lt::LTResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status LTService::Service::ProcessFileRequest(::grpc::ServerContext* context, const ::lt::FileRequest* request, ::lt::FileResponse* response) {
   (void) context;
   (void) request;
   (void) response;
